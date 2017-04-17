@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2005-2014 Red Hat, Inc. Red Hat licenses this file to you 
+	under the Apache License, version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd            http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd        ">
+    <camelContext id="camelContext-6d57239c-dfba-406c-980b-f22296a13b87" xmlns="http://camel.apache.org/schema/spring">
+        <jmxAgent createConnector="false" disabled="true" id="agent"
+            includeHostName="false" mask="false"
+            onlyRegisterProcessorWithCustomId="false"
+            registerNewRoutes="true" statisticsLevel="All" usePlatformMBeanServer="true"/>
+        <route id="route1">
+            <from id="_from1" uri="netty4:tcp://10.0.0.31:7727?exchangePattern=InOut&amp;textline=true&amp;decoderMaxLineLength=2000"/>
+            <to id="_to1" uri="bean:rogerPorcess"/>
+            <choice id="_choice1">
+                <when id="goahead">
+                    <simple>${in.header.goahead} == 'yes'</simple>
+                    <split id="_split1">
+                        <tokenize token=","/>
+                        <to id="_to2" uri="bean:roger2Porcess"/>
+                        <to id="_to3" uri="netty4:tcp://10.0.0.31:9010?exchangePattern=InOut&amp;textline=true&amp;decoderMaxLineLength=9999999"/>
+                        <!--      					<to uri="bean:rogerEndPorcess"/> -->
+                    </split>
+                </when>
+            </choice>
+            <to id="_to4" uri="bean:rogerEndPorcess"/>
+        </route>
+    </camelContext>
+    <bean class="com.fusesource.demo.router.RogerProcessor" id="rogerPorcess"/>
+    <bean class="com.fusesource.demo.router.Roger2Processor" id="roger2Porcess"/>
+    <bean class="com.fusesource.demo.router.RogerEndProcessor" id="rogerEndPorcess"/>
+    <bean class="com.fusesource.demo.router.tcpOutProcessor" id="tcpOutProcessor"/>
+</beans>
